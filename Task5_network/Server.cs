@@ -22,6 +22,7 @@ internal class Server
                 {
                     if (ctx.Users.Any(x => x.Name == message.FromName))
                     {
+                        await SendMessageToSenderAsync(message.FromName, fromIPEndPoint, "Вы уже зарегистрированы!");
                         return; //если пользоатель существует, возврат
                     }
 
@@ -43,18 +44,25 @@ internal class Server
 
     private static async Task ConfirmAsync(int? messageId) //подтверждение получения сообщения
     {
-
-        using (var ctx = new Context())
+        try
         {
-            var msg = await ctx.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
-
-            if (msg != null)
+            using (var ctx = new Context())
             {
-                msg.Received = true; //статус прочтения 
-                await ctx.SaveChangesAsync();
-                Console.WriteLine($"Сообщение {messageId} получено.");
+                var msg = await ctx.Messages.FirstOrDefaultAsync(m => m.Id == messageId);
+
+                if (msg != null)
+                {
+                    msg.Received = true; //статус прочтения 
+                    await ctx.SaveChangesAsync();
+                    Console.WriteLine($"Сообщение {messageId} получено.");
+                }
             }
         }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+   
     }
 
     private static async Task SendMessageAsync(MessageUDP message, IPEndPoint fromep) //отправка сообщения 
@@ -163,7 +171,7 @@ internal class Server
     {
         try
         {
-            if (clients.TryGetValue(fromName, out IPEndPoint clientEndPoint)) //пользователь найден в базе
+            if (clients.TryGetValue(fromName, out IPEndPoint clientEndPoint)) //пользователь найден в словаре
             {
                 using (var ctx = new Context())
                 {
@@ -172,31 +180,45 @@ internal class Server
                         .Where(m => m.ToUser.Name == fromName && !m.Received)
                         .ToListAsync();
 
-                    foreach (var message in unreadMessages)
+                    if (unreadMessages.Count > 0)
                     {
-                        // MessageUDP для каждого непрочитанного сообщения
-                        var messageUDP = new MessageUDP
+                        foreach (var message in unreadMessages)
                         {
-                            Id = message.Id, 
-                            Command = Command.Message,
-                            FromName = message.FromUser.Name,
-                            ToName = message.ToUser.Name,
-                            Text = message.Text,
-                            Time = DateTime.Now
-                        };
+                            // MessageUDP для каждого непрочитанного сообщения
+                            var messageUDP = new MessageUDP
+                            {
+                                Id = message.Id,
+                                Command = Command.Message,
+                                FromName = message.FromUser.Name,
+                                ToName = message.ToUser.Name,
+                                Text = message.Text,
+                                Time = DateTime.Now
+                            };
 
-                        // Отправляем сообщение клиенту
-                        string messageJson = messageUDP.ToJson();
-                        byte[] messageBytes = Encoding.UTF8.GetBytes(messageJson);
-                        await udpClient.SendAsync(messageBytes, messageBytes.Length, clientEndPoint);
+                            // Отправляем сообщение клиенту
+                            string messageJson = messageUDP.ToJson();
+                            byte[] messageBytes = Encoding.UTF8.GetBytes(messageJson);
+                            await udpClient.SendAsync(messageBytes, messageBytes.Length, clientEndPoint);
 
-                        // После отправки отмечаем сообщение как прочитанное
-                        message.Received = true;
+                            // После отправки отмечаем сообщение как прочитанное
+                            message.Received = true;
+                        }
+
+                        // Сохраняем изменения в базе данных
+                        await ctx.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        await SendMessageToSenderAsync(fromName, clientEndPoint, $"Непрочитанные сообщения отсутствуют.");
                     }
 
-                    // Сохраняем изменения в базе данных
-                    await ctx.SaveChangesAsync();
+                    
                 }
+            }
+
+            else
+            {
+                await SendMessageToSenderAsync(fromName, clientEndPoint, $"Необходимо зарегистрироваться");
             }
         }
         catch (Exception ex)
