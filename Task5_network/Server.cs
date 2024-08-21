@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 
-internal class Server
+public class Server
 {
     private static Dictionary<string, IPEndPoint> clients = new Dictionary<string, IPEndPoint>();
     private static UdpClient udpClient;

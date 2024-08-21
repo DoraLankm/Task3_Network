@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp21
 {
-    internal class MessageUDP
+    public class MessageUDP
     {
         public Command Command { get; set; } // Тип команды
         public int? Id { get; set; } // Идентификатор сообщения

@@ -3,148 +3,68 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
+using ConsoleApp21.Abstraction;
 
 internal class Client
 {
-    private static IPEndPoint iPEndPoint;
-    private static CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
-    private static CancellationToken token = cancelTokenSource.Token;
+    private readonly IMessageSource _messageSource;
+    private readonly IPEndPoint IPEndPoint;
+    private readonly string _name;
 
-    public static async Task StartAsync(string name)
+    public Client(IMessageSource messageSource, IPEndPoint iPEndPoint, string name)
     {
-        iPEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 12345);
-        UdpClient ucl = new UdpClient();
-
-        Task receiveTask = ReceiveMessageAsync(ucl); //ожидание сообщения
-        Task sendTask = SendCommandAsync(name, ucl); //отправка сообщения 
-
-        await Task.WhenAny(receiveTask, sendTask);
-        cancelTokenSource.Cancel(); // Отмена всех задач при завершении
-
-        await Task.WhenAll(receiveTask, sendTask); // Дождаться завершения всех задач
+        _messageSource = messageSource;
+        IPEndPoint = iPEndPoint;
+        _name = name;
     }
 
-    private static async Task SendCommandAsync(string nik, UdpClient ucl) 
+    private void Register()
     {
-        try
+        var message = new MessageUDP()
         {
-            while (!token.IsCancellationRequested)
-            {
-                Console.WriteLine("Введите имя получателя:");
-                string userName = Console.ReadLine();
-
-                if (string.IsNullOrEmpty(userName))
-                {
-                    Console.WriteLine("Имя получателя не может быть пустым.");
-                    continue;
-                }
-
-                if (userName.Equals("Server")) //получатель сервер
-                {
-                    Console.WriteLine("Выберите команду (Register, List, Exit):");
-                    string commandInput = Console.ReadLine();
-
-                    if (commandInput.ToLower().Equals("exit"))
-                    {
-                        cancelTokenSource.Cancel();
-                        continue;
-                    }
-
-                    Command command;
-                    if (!Enum.TryParse(commandInput, true, out command))
-                    {
-                        Console.WriteLine("Неизвестная команда.");
-                        continue;
-                    }
-
-                    var serverMessage = new MessageUDP
-                    {
-                        FromName = nik,
-                        ToName = "Server",
-                        Command = command
-                    };
-
-                    await SendMessageAsync(ucl, serverMessage);
-                }
-                else //другой получатель
-                {
-                    Console.WriteLine("Введите сообщение:");
-                    string text = Console.ReadLine();
-
-                    var userMessage = new MessageUDP
-                    {
-                        FromName = nik,
-                        ToName = userName,
-                        Text = text,
-                        Command = Command.Message // Обычное сообщение
-                    };
-
-                    await SendMessageAsync(ucl, userMessage);
-                }
-            }
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        
-    }
-
-    private static async Task SendMessageAsync(UdpClient ucl, MessageUDP message)
-    {
-        string json = message.ToJson();
-        byte[] bytes = Encoding.UTF8.GetBytes(json);
-        await ucl.SendAsync(bytes, bytes.Length, iPEndPoint);
-    }
-
-    private static async Task ReceiveMessageAsync(UdpClient ucl) //ожидание сообщения
-    {
-        while (!token.IsCancellationRequested)
-        {
-            try
-            {
-                if (ucl.Available > 0)
-                {
-                    var result = await ucl.ReceiveAsync();
-                    string str = Encoding.UTF8.GetString(result.Buffer);
-                    var message = MessageUDP.FromJson(str);
-
-                    if (message != null)
-                    {
-                        // Выводим полученное сообщение
-                        Console.WriteLine(message.ToString());
-
-                        if (message.Command == Command.Message && message.Id != null)
-                        {
-                            // Автоматически подтверждаем получение сообщения
-                            await SendConfirmationAsync(ucl, message.FromName, message.Id.Value);
-                        }
-                    }
-                }
-                else
-                {
-                    await Task.Delay(100);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-    }
-
-    private static async Task SendConfirmationAsync(UdpClient ucl, string fromName, int messageId)
-    {
-        var confirmationMessage = new MessageUDP
-        {
-            FromName = fromName,
-            ToName = "Server", // Отправляем серверу
-            Command = Command.Confirmation,
-            Id = messageId
+            Command = Command.Register,
+            FromName = _name,
+            ToName = "Server",
+            Time = DateTime.Now
         };
+        _messageSource.SendMessage(message, IPEndPoint);
 
-        string json = confirmationMessage.ToJson();
-        byte[] bytes = Encoding.UTF8.GetBytes(json);
-        await ucl.SendAsync(bytes, bytes.Length, iPEndPoint);
+    }
+
+    public void ClientSender()
+    {
+
+        while (true)
+        {
+            Console.WriteLine("Введите сообщение");
+            string message = Console.ReadLine();
+            Console.WriteLine("Введите имя");
+            string name = Console.ReadLine();
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+            MessageUDP messageUDP = new MessageUDP
+            {
+                Command = Command.Message,
+                ToName = name,
+                Text = message,
+                FromName = _name,
+                Time = DateTime.Now
+            };
+            _messageSource.SendMessage(messageUDP, IPEndPoint);
+        }
+    }
+
+    public void ClientListener()
+    {
+        Register();
+        IPEndPoint ep = new IPEndPoint(IPEndPoint.Address, IPEndPoint.Port);
+        while (true)
+        {
+            MessageUDP messageUDP = _messageSource.ReceiveMessage(ref ep);
+            Console.WriteLine(messageUDP);
+
+        }
     }
 }

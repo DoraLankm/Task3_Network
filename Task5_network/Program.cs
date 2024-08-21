@@ -12,7 +12,7 @@ class Program
         {
             if (args.Length == 1 )
             {
-                await Client.StartAsync(args[0]);
+                //await Client.StartAsync(args[0]);
             }
         }
     }
