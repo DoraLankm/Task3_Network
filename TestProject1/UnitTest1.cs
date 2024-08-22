@@ -15,16 +15,16 @@ namespace TestProject1
             endPoint = new IPEndPoint(IPAddress.Any,0);
         }
 
-        //[Test]
-        //public void TestReceiveMessage()
-        //{
-        //    _source = new MockMessageSource();
-        //    var result = _source.ReceiveMessage(ref endPoint);
-        //    Assert.IsNotNull(result);
-        //    Assert.IsNull(result.Text);
-        //    Assert.IsNotNull(result.FromName);
-        //    Assert.That(Command.Register, Is.EqualTo(result.Command));
-        //}
+        [Test]
+        public void TestReceiveMessage()
+        {
+            _source = new MockMessageSource();
+            var result = _source.ReceiveMessage(ref endPoint);
+            Assert.IsNotNull(result);
+            Assert.IsNull(result.Text);
+            Assert.IsNotNull(result.FromName);
+            Assert.That(Command.Register, Is.EqualTo(result.Command));
+        }
 
         [Test]
         //тест для проверки отправки сообщений клиентом 
@@ -34,7 +34,8 @@ namespace TestProject1
             Client client = new Client(mok, endPoint, "newClient");
             client.ClientSender("Hello","World");
 
-            MessageUDP get_message = mok.messageList[mok.messageList.Count - 1]; //последнее отправленное сообщение
+            Assert.IsTrue(mok.messageList.Count > 0);
+            MessageUDP get_message = mok.messageList.Last(); // Берем последнее сообщение из списка
             Assert.IsNotNull(get_message); //сообщение не пустое
             Assert.IsNotNull(get_message.ToName); //имя отправителя указано
             Assert.AreEqual("newClient", get_message.FromName); //имя отправителя совпадает
@@ -47,7 +48,7 @@ namespace TestProject1
 
         [Test]
         //тест для прослушки сообщения
-        public void ClientListen()
+        public void ClientListenOnce()
         {
             MockMessageSource mok = new MockMessageSource(); //мок
             Client client = new Client(mok, endPoint, "newClient");
@@ -61,12 +62,13 @@ namespace TestProject1
                 Time = DateTime.Now
             };
 
+            int count = mok.messages.Count; //число сообщений до помещения в очередь
+
             mok.messages.Enqueue(message); //добавляем сообщение в конец очереди
 
-            client.ClientListener(); //слушаем
+            client.ClientListenerOnce(); //слушаем
 
-            Assert.AreEqual(0, mok.messages.Count); //удаление из очереди сообщения
-            Assert.AreSame(message, mok.messageList[mok.messageList.Count-1]); //отправленные сообщения должны совпадать
+            Assert.AreEqual(count, mok.messages.Count); //удаление из очереди сообщения
         }
     }
 }

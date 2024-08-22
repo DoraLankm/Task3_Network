@@ -61,6 +61,14 @@ public class Client
 
     }
 
+    public void ClientListenerOnce()
+    {
+        Register();
+        IPEndPoint ep = new IPEndPoint(IPEndPoint.Address, IPEndPoint.Port);
+        MessageUDP messageUDP = _messageSource.ReceiveMessage(ref ep);
+        Console.WriteLine(messageUDP);  
+    }
+
     public void ClientListener()
     {
         Register();

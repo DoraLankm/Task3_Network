@@ -44,7 +44,7 @@ namespace TestProject1
 
         public void SendMessage(MessageUDP message, IPEndPoint iPEndPoint)
         {
-            messages.Enqueue(message);
+            messageList.Add(message);
         }
 
 
