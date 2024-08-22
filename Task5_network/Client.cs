@@ -5,7 +5,7 @@ using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 using ConsoleApp21.Abstraction;
 
-internal class Client
+public class Client
 {
     private readonly IMessageSource _messageSource;
     private readonly IPEndPoint IPEndPoint;
@@ -18,7 +18,7 @@ internal class Client
         _name = name;
     }
 
-    private void Register()
+    public void Register()
     {
         var message = new MessageUDP()
         {
@@ -31,9 +31,8 @@ internal class Client
 
     }
 
-    public void ClientSender()
+    public void ClientStartSend()
     {
-
         while (true)
         {
             Console.WriteLine("Введите сообщение");
@@ -44,16 +43,22 @@ internal class Client
             {
                 continue;
             }
-            MessageUDP messageUDP = new MessageUDP
-            {
-                Command = Command.Message,
-                ToName = name,
-                Text = message,
-                FromName = _name,
-                Time = DateTime.Now
-            };
-            _messageSource.SendMessage(messageUDP, IPEndPoint);
+            ClientSender(message,name);
         }
+    }
+
+    public void ClientSender(string message, string name)
+    {
+        MessageUDP messageUDP = new MessageUDP
+        {
+            Command = Command.Message,
+            ToName = name,
+            Text = message,
+            FromName = _name,
+            Time = DateTime.Now
+        };
+        _messageSource.SendMessage(messageUDP, IPEndPoint);
+
     }
 
     public void ClientListener()

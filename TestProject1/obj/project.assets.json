@@ -3922,19 +3922,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\darsh\\.nuget\\packages\\": {}
+    "C:\\Users\\Daria\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\darsh\\OneDrive\\Рабочий стол\\Task\\TestProject1\\TestProject1.csproj",
+      "projectUniqueName": "C:\\Users\\Daria\\Desktop\\Task4\\Task3_Network\\TestProject1\\TestProject1.csproj",
       "projectName": "TestProject1",
-      "projectPath": "C:\\Users\\darsh\\OneDrive\\Рабочий стол\\Task\\TestProject1\\TestProject1.csproj",
-      "packagesPath": "C:\\Users\\darsh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\darsh\\OneDrive\\Рабочий стол\\Task\\TestProject1\\obj\\",
+      "projectPath": "C:\\Users\\Daria\\Desktop\\Task4\\Task3_Network\\TestProject1\\TestProject1.csproj",
+      "packagesPath": "C:\\Users\\Daria\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Daria\\Desktop\\Task4\\Task3_Network\\TestProject1\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\darsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Daria\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -3942,14 +3942,16 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Users\\Daria\\AppData\\Roaming\\MirtekNuget": {},
+        "\\\\file-server\\NuGet\\MirtekNuget": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\darsh\\OneDrive\\Рабочий стол\\Task\\Task5_network\\ConsoleApp21.csproj": {
-              "projectPath": "C:\\Users\\darsh\\OneDrive\\Рабочий стол\\Task\\Task5_network\\ConsoleApp21.csproj"
+            "C:\\Users\\Daria\\Desktop\\Task4\\Task3_Network\\Task5_network\\ConsoleApp21.csproj": {
+              "projectPath": "C:\\Users\\Daria\\Desktop\\Task4\\Task3_Network\\Task5_network\\ConsoleApp21.csproj"
             }
           }
         }
@@ -3958,6 +3960,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -4001,7 +4008,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

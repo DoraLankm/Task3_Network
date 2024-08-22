@@ -12,8 +12,8 @@ namespace TestProject1
     internal class MockMessageSource : IMessageSource
     {
         
-        private Queue<MessageUDP> messages = new(); // Очередь сообщений для имитации приёма сообщений
-        private IMessageSource server; // Ссылка на сервер для управления его работой
+        public Queue<MessageUDP> messages = new(); // Очередь сообщений для имитации приёма сообщений
+        public List<MessageUDP> messageList = new List<MessageUDP>(); //полученные сообщения
         private IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0); // Конечная точка для имитации
 
  // Конструктор класса, который инициализирует начальные сообщения в очереди
@@ -39,7 +39,7 @@ namespace TestProject1
 
         public MessageUDP ReceiveMessage(ref IPEndPoint iPEndPoint)
         {
-            return messages.Peek();
+            return messages.Dequeue();
         }
 
         public void SendMessage(MessageUDP message, IPEndPoint iPEndPoint)
